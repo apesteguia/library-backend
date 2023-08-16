@@ -74,7 +74,6 @@ func FindUser(username string, pass string) (User, error) {
 
 	db, err := sql.Open("sqlite3", DB)
 	if err != nil {
-		fmt.Println("No abre")
 		return user, err
 	}
 	defer db.Close()
@@ -82,20 +81,12 @@ func FindUser(username string, pass string) (User, error) {
 	query := "SELECT username, password FROM users WHERE username = ?"
 	row := db.QueryRow(query, username)
 
-	var storedPass string
-	err = row.Scan(&user.Name, &storedPass)
+	err = row.Scan(&user.Name, &user.Pass)
 	if err != nil {
-		fmt.Println("User not found 1")
 		if errors.Is(err, sql.ErrNoRows) {
-			fmt.Println("User not found 2")
 			return user, errors.New("user not found")
 		}
 		return user, err
-	}
-
-	if err != nil {
-		fmt.Println("Invalid password")
-		return user, errors.New("invalid password")
 	}
 
 	return user, nil

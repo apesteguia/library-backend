@@ -33,35 +33,6 @@ func init() {
 	SecretKey = key
 }
 
-func AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		tokenString := c.Request().Header.Get(echo.HeaderAuthorization)
-		if tokenString == "" {
-			return c.JSON(http.StatusUnauthorized, echo.Map{"error": "Unauthorized"})
-		}
-
-		token, err := jwt.ParseWithClaims(tokenString, &db.User{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte(SecretKey), nil
-		})
-
-		if err != nil || !token.Valid {
-			return c.JSON(http.StatusUnauthorized, echo.Map{"error": "Unauthorized"})
-		}
-
-		// Attach the user information to the request context
-		user := token.Claims.(*db.User)
-		c.Set("user", user)
-
-		return next(c)
-	}
-}
-
-func ProtectedRoute(c echo.Context) error {
-	user := c.Get("user").(*db.User) // Get user info from the context
-	// Your protected route logic here
-	return c.JSON(http.StatusOK, echo.Map{"message": "Welcome, " + user.Name})
-}
-
 func Login(c echo.Context) error {
 	var requestBody struct {
 		Name string `json:"name"`
@@ -73,8 +44,12 @@ func Login(c echo.Context) error {
 
 	user, err := db.FindUser(requestBody.Name, requestBody.Pass)
 	if err != nil {
-		fmt.Println("User not found 10", requestBody.Name, requestBody.Pass)
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "Invalid credentials"})
+	}
+
+	fmt.Println("User.Pass", user.Pass, "request.Pass", requestBody.Pass)
+	if user.Name != requestBody.Name || user.Pass != requestBody.Pass {
+		return nil
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &db.User{

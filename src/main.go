@@ -21,7 +21,6 @@ func main() {
 
 	e.POST("/login", login.Login)
 	e.POST("/register", login.Register)
-	e.GET("/users", login.ProtectedRoute, login.AuthMiddleware)
 
 	e.Logger.Fatal(e.Start(PORT))
 }
