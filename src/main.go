@@ -44,7 +44,7 @@ func main() {
 		SigningKey: []byte(login.SecretKey),
 	}
 	r.Use(echojwt.WithConfig(config))
-	r.GET("/:username", login.SendJson)
+	r.GET("/:username", login.SendUserData)
 
 	e.Logger.Fatal(e.Start(PORT))
 }

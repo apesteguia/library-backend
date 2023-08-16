@@ -22,6 +22,26 @@ type User struct {
 
 const DB = "database.db"
 
+func UserData(username string) (User, error) {
+	var user User
+	db, err := sql.Open("sqlite3", DB)
+	if err != nil {
+		return user, err
+	}
+	defer db.Close()
+
+	query := "SELECT username, email, password, profile_description, profile_picture_url FROM users WHERE username = ?"
+	row := db.QueryRow(query, username)
+	err = row.Scan(&user.Name, &user.Email, &user.Pass, &user.ProfileDescription, &user.ProfilePictureURL)
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return user, errors.New("user not found")
+		}
+		return user, err
+	}
+	return user, nil
+}
 func AddUser(username string, email string, pass string) error {
 	db, err := sql.Open("sqlite3", DB)
 	if err != nil {

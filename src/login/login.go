@@ -14,10 +14,19 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func SendJson(c echo.Context) error {
-	return c.JSON(http.StatusOK, echo.Map{
-		"message": "Hello, World!",
-	})
+func SendUserData(c echo.Context) error {
+	username := c.Param("username")
+	user, err := db.UserData(username)
+	if err != nil {
+		fmt.Println("Error en SendUserData")
+	}
+	fmt.Println(user)
+	response := echo.Map{
+		"message": "User data retrieved successfully",
+		"user":    user, // Assuming user is a struct containing user data
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 func generateSecretKey(keyLength int) (string, error) {
