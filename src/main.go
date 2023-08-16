@@ -5,10 +5,10 @@ import (
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"libreriaGO/src/api"
+	"libreriaGO/src/login"
 	"net/http"
 )
-
-import "libreriaGO/src/login"
 
 const PORT = ":8080"
 
@@ -41,10 +41,10 @@ func main() {
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(jwtCustomClaims)
 		},
-		SigningKey: []byte(login.SecretKey),
+		SigningKey: []byte(api.SecretKey),
 	}
 	r.Use(echojwt.WithConfig(config))
-	r.GET("/:username", login.SendUserData)
+	r.GET("/:username", api.SendUserData)
 
 	e.Logger.Fatal(e.Start(PORT))
 }
