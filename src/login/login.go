@@ -14,6 +14,12 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+func SendJson(c echo.Context) error {
+	return c.JSON(http.StatusOK, echo.Map{
+		"message": "Hello, World!",
+	})
+}
+
 func generateSecretKey(keyLength int) (string, error) {
 	key := make([]byte, keyLength)
 	_, err := rand.Read(key)
@@ -47,21 +53,17 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusUnauthorized, echo.Map{"error": "Invalid credentials"})
 	}
 
-	fmt.Println("User.Pass", user.Pass, "request.Pass", requestBody.Pass)
 	if user.Name != requestBody.Name || user.Pass != requestBody.Pass {
 		return nil
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &db.User{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
-		// Populate other fields as needed...
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
-		},
+	// Create JWT token using the HS256 signing method
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+		Subject:   user.Name, // Set the subject (user name) as the token's subject
+		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 	})
 
+	// Sign the token using the SecretKey
 	signedToken, err := token.SignedString([]byte(SecretKey))
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error creating token")
